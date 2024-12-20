@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<title>휘매쓰 연산 챌린지!</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f9fafc;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background: linear-gradient(90deg, #6a5acd, #9370db);
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .difficulty-selection, .question-container, .final-screen {
+    text-align: center;
+  }
+
+  .difficulty-btn {
+    display: inline-block;
+    margin: 10px;
+    padding: 15px 30px;
+    border-radius: 5px;
+    background: #9370db;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2em;
+    text-decoration: none;
+    border: none;
+  }
+
+  .difficulty-btn:hover {
+    background: #6a5acd;
+  }
+
+  .score-display, .lives-display, .total-time-display {
+    margin: 10px;
+    font-weight: bold;
+  }
+
+  .energy-bar-container {
+    width: 100%;
+    background: #ccc;
+    height: 20px;
+    border-radius: 5px;
+    margin: 20px 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .energy-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6347, #ff4500);
+    width: 100%;
+    transition: width 0.5s linear;
+  }
+
+  .answers {
+    margin: 20px 0;
+  }
+
+  .answer-btn {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background: #e6e6fa;
+    cursor: pointer;
+    font-size: 1.1em;
+    width: 80%;
+    max-width: 300px;
+    border: none;
+  }
+
+  .answer-btn:hover {
+    background: #d8bfd8;
+  }
+
+  .input-answer {
+    margin: 20px 0;
+  }
+
+  .input-answer input {
+    padding: 10px;
+    font-size: 1.1em;
+    width: 60%;
+    max-width: 300px;
+  }
+
+  .submit-btn {
+    margin-top: 10px;
+    background: #9370db;
+    color: #fff;
+  }
+
+  .submit-btn:hover {
+    background: #6a5acd;
+  }
+
+  .final-screen h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+
+  .final-screen p {
+    margin: 10px 0;
+  }
+
+  .message-area {
+    margin: 20px 0;
+    font-weight: bold;
+    color: red;
+    min-height: 40px;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+<script>
+// 모든 문제 데이터, 분수 표현을 \\frac{}{} 형태로 정리하고,
+// (x = 값) 부분에서도 x,y값을 모두 수식 환경 내에 표기.
+// 절대 문제 생략 금지. 기존 문제 + 추가 20문제 총합.
+
+var allQuestions = [
+  // 원래 있었던 문제들 (수식 표현 수정)
+  // x = -2
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"x^{2} + x", correct:"2", distractors:["0","1","-2"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"\\frac{1}{x}", correct:"-\\frac{1}{2}", distractors:["\\frac{1}{2}","-2","-\\frac{1}{4}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"-\\frac{4}{x}", correct:"2", distractors:["-2","4","1"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"\\frac{5}{2x}", correct:"-\\frac{5}{4}", distractors:["-1","\\frac{5}{4}","-2"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"-\\frac{8}{3x}", correct:"\\frac{4}{3}", distractors:["-\\frac{4}{3}","2","1"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"\\frac{6}{x+5}", correct:"2", distractors:["3","-2","1"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"\\frac{6}{x} + 7", correct:"4", distractors:["-4","7","3"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"\\frac{10}{x}-2", correct:"-7", distractors:["-5","-10","7"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"-5x^{2} + 3", correct:"-17", distractors:["-15","-20","-3"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"x^{3} + 6", correct:"-2", distractors:["2","-1","-4"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"3x^{2}-2", correct:"10", distractors:["8","12","-10"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"-4x^{3}-15", correct:"17", distractors:["15","20","-17"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"(-x)^{4} + 3", correct:"19", distractors:["16","22","-19"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"2x^{4}-9", correct:"23", distractors:["20","25","-23"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"4x^{2}-4x+5", correct:"29", distractors:["28","30","-29"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-2\\))", expression:"2x^{2}+4x-7", correct:"-7", distractors:["-8","-10","7"]},
+
+  // x = -1/3
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"x^{2}", correct:"\\frac{1}{9}", distractors:["-\\frac{1}{9}","\\frac{1}{3}","\\frac{1}{81}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"-x^{2}", correct:"-\\frac{1}{9}", distractors:["\\frac{1}{9}","-\\frac{1}{3}","-\\frac{1}{81}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"(-x)^{2}", correct:"\\frac{1}{9}", distractors:["-\\frac{1}{9}","\\frac{1}{3}","\\frac{1}{81}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"x^{3}", correct:"-\\frac{1}{27}", distractors:["\\frac{1}{27}","-\\frac{1}{9}","-\\frac{1}{3}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"-x^{3}", correct:"\\frac{1}{27}", distractors:["-\\frac{1}{27}","\\frac{1}{9}","\\frac{1}{3}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{1}{3}\\))", expression:"(-x)^{3}", correct:"\\frac{1}{27}", distractors:["-\\frac{1}{27}","\\frac{1}{9}","\\frac{1}{81}"]},
+
+  // x = 2
+  {instruction:"다음 식의 값을 구하시오. (x = \\(2\\))", expression:"3x+4", correct:"10", distractors:["8","12","9"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(2\\))", expression:"3x-9", correct:"-3", distractors:["-9","3","0"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(2\\))", expression:"-2x+\\frac{1}{2}", correct:"-\\frac{7}{2}", distractors:["-3","-4","-\\frac{7}{4}"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(2\\))", expression:"-x-7", correct:"-9", distractors:["-7","-8","9"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(2\\))", expression:"\\frac{2}{3}-\\frac{x}{6}", correct:"\\frac{1}{3}", distractors:["\\frac{2}{3}","-\\frac{1}{3}","\\frac{1}{6}"]},
+
+  // x = 3
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"3x", correct:"9", distractors:["6","12","-9"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"-5x", correct:"-15", distractors:["-3","-9","-18"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"2x+2", correct:"8", distractors:["6","10","-8"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"-4x-1", correct:"-13", distractors:["-12","-14","-1"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"\\frac{1}{3}x -5", correct:"-4", distractors:["4","-1","-5"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(3\\))", expression:"7 -4x", correct:"-5", distractors:["-7","-4","5"]},
+
+  // x = -2/3
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{2}{3}\\))", expression:"\\frac{2}{x}", correct:"-3", distractors:["3","-2","-1.5"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{2}{3}\\))", expression:"-\\frac{6}{x}", correct:"9", distractors:["-9","6","3"]},
+  {instruction:"다음 식의 값을 구하시오. (x = \\(-\\frac{2}{3}\\))", expression:"\\frac{4}{3x}", correct:"-2", distractors:["2","-1","-4"]},
+
+  // x=2, y=3
+  {instruction:"다음 식의 값을 구하시오. (x=\\(2\\), y=\\(3\\))", expression:"4x -7y", correct:"-13", distractors:["-11","-8","-17"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(2\\), y=\\(3\\))", expression:"-(x+y)", correct:"-5", distractors:["5","-3","-7"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(2\\), y=\\(3\\))", expression:"\\frac{x}{4}-\\frac{5}{4}y", correct:"-\\frac{13}{4}", distractors:["-3","-\\frac{15}{4}","\\frac{13}{4}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(2\\), y=\\(3\\))", expression:"\\frac{3+xy}{x-y}", correct:"-9", distractors:["9","-6","-3"]},
+
+  // x=-3, y=2
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-3\\), y=\\(2\\))", expression:"x+y", correct:"-1", distractors:["1","-2","0"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-3\\), y=\\(2\\))", expression:"4x+3y", correct:"-6", distractors:["-5","-9","6"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-3\\), y=\\(2\\))", expression:"-x+3y+5", correct:"14", distractors:["15","10","-14"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-3\\), y=\\(2\\))", expression:"(x+y)^{2}", correct:"1", distractors:["-1","0","4"]},
+
+  // 여기서부터 추가 20문제
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{1}{2}\\))", expression:"x+3", correct:"\\frac{7}{2}", distractors:["4","3","2"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-1\\))", expression:"2x-5", correct:"-7", distractors:["-5","-6","-8"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{3}{2}\\))", expression:"\\frac{2}{x}", correct:"\\frac{4}{3}", distractors:["\\frac{2}{3}","\\frac{3}{4}","2"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{3}{4}\\))", expression:"-4x", correct:"3", distractors:["-3","4","-4"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{2}{5}\\))", expression:"5x+1", correct:"3", distractors:["2","4","\\frac{8}{5}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{5}{6}\\))", expression:"\\frac{6}{x}", correct:"-\\frac{36}{5}", distractors:["-\\frac{30}{5}","-\\frac{12}{5}","-7"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(5\\))", expression:"x^{2}-x", correct:"20", distractors:["25","30","15"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-4\\))", expression:"-x^{2}+1", correct:"-15", distractors:["-17","-1","-16"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{2}{5}\\))", expression:"2x^{3}", correct:"-\\frac{16}{125}", distractors:["\\frac{16}{125}","-\\frac{8}{125}","-\\frac{16}{25}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{4}{3}\\))", expression:"\\frac{3}{x}-1", correct:"\\frac{5}{4}", distractors:["\\frac{1}{4}","\\frac{9}{4}","\\frac{5}{2}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(10\\))", expression:"\\frac{x}{5}-2", correct:"0", distractors:["1","-1","2"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{1}{2}\\))", expression:"x^{2}+\\frac{1}{4}", correct:"\\frac{1}{2}", distractors:["\\frac{1}{4}","\\frac{3}{4}","-\\frac{1}{2}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(2\\), y=\\(-2\\))", expression:"xy", correct:"-4", distractors:["4","-2","2"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{1}{3}\\), y=\\(3\\))", expression:"x+y", correct:"\\frac{10}{3}", distractors:["\\frac{9}{3}","\\frac{11}{3}","\\frac{10}{9}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{3}{2}\\), y=\\(1\\))", expression:"-x+2y", correct:"\\frac{7}{2}", distractors:["\\frac{5}{2}","\\frac{9}{2}","\\frac{3}{2}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(4\\), y=\\(-\\frac{1}{2}\\))", expression:"x^{2}+y", correct:"\\frac{31}{2}", distractors:["\\frac{32}{2}","\\frac{30}{2}","15"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{1}{3}\\), y=\\(-\\frac{2}{3}\\))", expression:"(x - y)", correct:"\\frac{1}{3}", distractors:["-\\frac{1}{3}","\\frac{2}{3}","0"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-\\frac{4}{5}\\), y=\\(\\frac{1}{5}\\))", expression:"xy+1", correct:"\\frac{21}{25}", distractors:["\\frac{25}{25}","\\frac{20}{25}","\\frac{1}{25}"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(-2\\), y=\\(-1\\))", expression:"(x+y)^{3}", correct:"-27", distractors:["27","-9","-3"]},
+  {instruction:"다음 식의 값을 구하시오. (x=\\(\\frac{5}{6}\\))", expression:"-3x", correct:"-\\frac{5}{2}", distractors:["\\frac{5}{2}","-\\frac{15}{6}","-2"]}
+];
+
+// 문제를 랜덤으로 섞기
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// 모두 사지선다
+for (let i=0; i<allQuestions.length; i++){
+  allQuestions[i].qtype = '4-choice';
+}
+
+var shuffledQuestions = shuffleArray(allQuestions.slice());
+var numQuestions = shuffledQuestions.length;
+
+var difficulty = null;
+var baseTime = 0;
+var scorePerCorrect = 0;
+var totalTime = 0; 
+var gameInterval = null;
+var questionIndex = 0;
+var lives = 3;
+var score = 0;
+var currentTimer = 0;
+var maxTime = 0;
+var energyInterval = null;
+var showingMessage = false;
+
+function startGame(diff) {
+  difficulty = diff;
+  if (diff === 'hardest') {
+    baseTime = 20;
+    scorePerCorrect = 20;
+  } else if (diff === 'hard') {
+    baseTime = 30;
+    scorePerCorrect = 15;
+  } else if (diff === 'medium') {
+    baseTime = 40;
+    scorePerCorrect = 13;
+  } else {
+    baseTime = 0; 
+    scorePerCorrect = 10;
+  }
+
+  document.querySelector('.difficulty-selection').classList.add('hidden');
+  document.querySelector('.score-display').textContent = "점수: 0";
+  document.querySelector('.lives-display').textContent = "남은 기회: 3";
+  document.querySelector('.total-time-display').textContent = "총 경과 시간: 0초";
+  document.querySelector('.question-container').classList.remove('hidden');
+  startTimers();
+  showQuestion();
+}
+
+function startTimers() {
+  gameInterval = setInterval(function(){
+    totalTime++;
+    document.querySelector('.total-time-display').textContent = "총 경과 시간: " + totalTime + "초";
+  },1000);
+}
+
+function startEnergyBar() {
+  if (baseTime === 0) {
+    document.querySelector('.energy-bar-container').classList.add('hidden');
+    return;
+  }
+  document.querySelector('.energy-bar-container').classList.remove('hidden');
+  maxTime = baseTime;
+  currentTimer = baseTime;
+  document.querySelector('.energy-bar').style.width = "100%";
+  energyInterval = setInterval(function(){
+    currentTimer--;
+    var perc = (currentTimer/maxTime)*100;
+    document.querySelector('.energy-bar').style.width = perc+"%";
+    if (currentTimer<=0) {
+      clearInterval(energyInterval);
+      handleWrongAnswerTime();
+    }
+  },1000);
+}
+
+function stopEnergyBar() {
+  if (energyInterval) clearInterval(energyInterval);
+}
+
+function showQuestion() {
+  if (questionIndex >= shuffledQuestions.length) {
+    shuffledQuestions = shuffleArray(allQuestions.slice());
+    questionIndex = 0;
+  }
+
+  showingMessage = false;
+  document.querySelector('.message-area').innerHTML = "";
+  var q = shuffledQuestions[questionIndex];
+  document.querySelector('.question-text').innerHTML = q.instruction + "<br><br> \\(" + q.expression + "\\)";
+
+  var answersDiv = document.querySelector('.answers');
+  answersDiv.innerHTML = "";
+  var inputAnswerDiv = document.querySelector('.input-answer');
+  inputAnswerDiv.innerHTML = "";
+  inputAnswerDiv.classList.add('hidden');
+
+  var correct = q.correct;
+  var dist = q.distractors.slice();
+
+  var choices = dist.slice();
+  choices.push(correct);
+  shuffleArray(choices);
+
+  for (let i=0; i<4; i++) {
+    let btn = document.createElement('button');
+    btn.classList.add('answer-btn');
+    btn.innerHTML = "\\(" + choices[i] + "\\)";
+    btn.onclick = function() {checkAnswer(choices[i] === correct, correct);};
+    answersDiv.appendChild(btn);
+  }
+
+  MathJax.typesetPromise();
+  stopEnergyBar();
+  startEnergyBar();
+}
+
+function handleWrongAnswerTime() {
+  lives--;
+  showingMessage = true;
+  document.querySelector('.lives-display').textContent = "남은 기회: " + lives;
+  document.querySelector('.message-area').innerHTML = "시간 초과! 오답 처리됩니다.";
+  MathJax.typesetPromise();
+  if (lives <=0) {
+    setTimeout(endGame,1500);
+  } else {
+    questionIndex++;
+    setTimeout(showQuestion,1500);
+  }
+}
+
+function checkAnswer(isCorrect, correctAnswer) {
+  if (showingMessage) return;
+  stopEnergyBar();
+  if (isCorrect) {
+    score += scorePerCorrect;
+    document.querySelector('.score-display').textContent = "점수: " + score;
+    questionIndex++;
+    showQuestion();
+  } else {
+    lives--;
+    showingMessage = true;
+    document.querySelector('.lives-display').textContent = "남은 기회: " + lives;
+    document.querySelector('.message-area').innerHTML = "오답! 정답은: \\(" + correctAnswer + "\\)";
+    MathJax.typesetPromise();
+    if (lives <=0) {
+      setTimeout(endGame,1500);
+    } else {
+      questionIndex++;
+      setTimeout(showQuestion,1500);
+    }
+  }
+}
+
+function endGame() {
+  clearInterval(gameInterval);
+  stopEnergyBar();
+  document.querySelector('.question-container').classList.add('hidden');
+  document.querySelector('.final-screen').classList.remove('hidden');
+  document.querySelector('.final-screen .final-score').textContent = "최종 점수: " + score;
+  document.querySelector('.final-screen .final-time').textContent = "총 경과 시간: " + totalTime + "초";
+}
+</script>
+</head>
+<body>
+<header>휘매쓰 연산 챌린지!</header>
+<div class="container">
+  <div class="difficulty-selection">
+    <p>난이도를 선택하세요:</p>
+    <button class="difficulty-btn" onclick="startGame('hardest')">최상(20초 제한, 문제당20점)</button>
+    <button class="difficulty-btn" onclick="startGame('hard')">상(30초 제한, 문제당15점)</button>
+    <button class="difficulty-btn" onclick="startGame('medium')">중(40초 제한, 문제당13점)</button>
+    <button class="difficulty-btn" onclick="startGame('easy')">하(시간제한 없음, 문제당10점)</button>
+  </div>
+
+  <div class="question-container hidden">
+    <div class="score-display"></div>
+    <div class="lives-display"></div>
+    <div class="total-time-display"></div>
+    <div class="energy-bar-container">
+      <div class="energy-bar"></div>
+    </div>
+    <div class="question-text"></div>
+    <div class="message-area"></div>
+    <div class="answers"></div>
+    <div class="input-answer hidden"></div>
+  </div>
+
+  <div class="final-screen hidden">
+    <h2>게임 종료!</h2>
+    <p class="final-score"></p>
+    <p class="final-time"></p>
+    <p><button class="difficulty-btn" onclick="location.reload()">다시 시작</button></p>
+  </div>
+</div>
+</body>
+</html>
